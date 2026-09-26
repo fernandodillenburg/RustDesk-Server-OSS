@@ -4,23 +4,7 @@ Este projeto faz parte do meu laboratório prático de Cloud, Linux, Docker, Net
 
 A proposta não é apenas instalar uma aplicação, mas documentar todo o ciclo:
 
-Cloud
-  ↓
-Networking
-  ↓
-Linux
-  ↓
-Docker
-  ↓
-Security
-  ↓
-Deployment
-  ↓
-Monitoring
-  ↓
-Backup
-  ↓
-Troubleshooting
+Cloud ➔ Networking ➔ Linux ➔ Docker ➔ Security ➔ Deployment
 
 ---
 # 🚀 RustDesk Server OSS no Oracle Cloud (Always Free)
@@ -124,8 +108,6 @@ Este laboratório demonstra conhecimentos em:
 - SSH
 - Infrastructure Operations
 - Containerization
-- Troubleshooting
-- Hardening
 - Documentação técnica
 
 ---
@@ -173,16 +155,7 @@ Cloud
 
 Este tutorial utiliza como referência:
 
-Ubuntu Server 24.04 LTS
-
-Verifique o sistema:
-
-cat /etc/os-release
-
-Exemplo:
-
-NAME="Ubuntu"
-VERSION="24.04 LTS"
+Canonical Ubuntu 20.04
 
 ---
 
@@ -200,10 +173,7 @@ Name:
 rustdesk-server
 
 Image:
-Ubuntu 24.04
-
-Shape:
-VM compatível com o workload desejado
+Canonical Ubuntu 20.04
 
 Networking:
 VCN existente ou nova VCN
@@ -215,17 +185,14 @@ Após a criação, obtenha o IP público:
 
 PUBLIC_IP
 
-Exemplo:
+<img width="1920" height="1545" alt="screencapture-cloud-oracle-srv" src="https://github.com/user-attachments/assets/6b6d0545-4875-47fe-b243-8d586185cb90" />
 
-203.0.113.10
-
-«Nunca utilize o IP de exemplo acima em sua configuração.»
 
 ---
 
 🔑 2. Acesso SSH
 
-Acesse a VM:
+Acesse a VM com arquivo SSH gerado ou fornecido na criação da VM.
 
 ssh ubuntu@<PUBLIC_IP>
 
@@ -233,13 +200,6 @@ Exemplo:
 
 ssh ubuntu@203.0.113.10
 
-Verifique o usuário:
-
-whoami
-
-E o hostname:
-
-hostnamectl
 
 ---
 
@@ -264,8 +224,6 @@ sudo apt install -y \
 ---
 
 🐳 4. Instalação do Docker
-
-Remova versões antigas, caso existam:
 
 sudo apt remove -y docker.io docker-doc docker-compose podman-docker containerd runc
 
@@ -304,6 +262,9 @@ Valide:
 docker --version
 
 docker compose version
+
+<img width="1815" height="1029" alt="Screenshot_3" src="https://github.com/user-attachments/assets/c40ad743-384a-43d9-b005-a50b56ff0087" />
+
 
 ---
 
@@ -380,7 +341,6 @@ services:
     network_mode: host
     restart: unless-stopped
 
-«Nota: valide a tag/imagem atualmente recomendada na documentação oficial do RustDesk antes de colocar o ambiente em produção. Evite fixar "latest" em ambientes críticos sem uma estratégia de atualização.»
 
 ---
 
@@ -459,6 +419,8 @@ Não abra indiscriminadamente todas as portas.
 
 Utilize apenas as portas necessárias para os serviços efetivamente configurados.
 
+<img width="1920" height="1545" alt="screencapture-cloud-oracle-srv" src="https://github.com/user-attachments/assets/8a3607d3-3bbb-45d4-b0a6-8a979401e678" />
+
 ---
 
 🔥 11. Firewall UFW
@@ -477,10 +439,6 @@ sudo ufw allow OpenSSH
 
 Depois, libere somente as portas necessárias ao RustDesk.
 
-Exemplo:
-
-sudo ufw allow <PORTA_TCP>/tcp
-sudo ufw allow <PORTA_UDP>/udp
 
 Verifique:
 
@@ -532,18 +490,21 @@ No cliente RustDesk, acesse as configurações de rede.
 
 Configure o servidor de ID/Rendezvous e Relay conforme o domínio/IP e portas definidos na infraestrutura.
 
-Exemplo conceitual:
 
 ID Server:
-rustdesk.example.com
+<PUBLIC_IP>
 
 Relay Server:
-rustdesk.example.com
+<PUBLIC_IP>
 
 Key:
 <CHAVE_PUBLICA>
 
-«Use o domínio ou IP público real do seu servidor.»
+<img width="1273" height="720" alt="Screenshot_1" src="https://github.com/user-attachments/assets/25525109-037c-4215-869c-f2abec9792b4" />
+
+<img width="1919" height="1000" alt="Screenshot_2" src="https://github.com/user-attachments/assets/791f27ce-a0d0-408f-a669-bae3fa07e749" />
+
+
 
 ---
 
@@ -569,385 +530,6 @@ dig rustdesk.example.com
 ou:
 
 nslookup rustdesk.example.com
-
----
-
-🔒 15. Segurança
-
-Uma implantação exposta à Internet deve ser tratada como infraestrutura de produção.
-
-SSH
-
-Evite autenticação por senha:
-
-PasswordAuthentication no
-
-Prefira:
-
-SSH Key Authentication
-
-Considere também:
-
-- desabilitar login SSH direto de "root"
-- restringir origem do SSH
-- utilizar chaves SSH
-- manter o sistema atualizado
-- monitorar logs
-
----
-
-Docker
-
-Verifique containers:
-
-docker ps
-
-Imagens:
-
-docker images
-
-Logs:
-
-docker compose logs
-
-Evite executar containers privilegiados sem necessidade.
-
----
-
-🔄 16. Atualização
-
-Antes de atualizar:
-
-docker compose pull
-
-Revise as alterações.
-
-Depois:
-
-docker compose up -d
-
-Valide:
-
-docker compose ps
-
-E:
-
-docker compose logs --tail=100
-
-Estratégia recomendada
-
-Em produção:
-
-Backup
-   ↓
-Pull da nova versão
-   ↓
-Atualização
-   ↓
-Health check
-   ↓
-Monitoramento
-   ↓
-Rollback se necessário
-
-Evite atualizar diretamente em produção sem conhecer as alterações da versão.
-
----
-
-💾 17. Backup
-
-Os dados persistidos estão no diretório:
-
-/opt/rustdesk/data
-
-Faça backup:
-
-tar -czvf rustdesk-backup-$(date +%F).tar.gz data/
-
-Exemplo:
-
-rustdesk-backup-2026-09-26.tar.gz
-
-Para um ambiente real, o backup deve ser armazenado fora da própria VM.
-
-Possibilidades:
-
-Object Storage
-Storage externo
-Backup server
-Outra região
-
----
-
-📊 18. Monitoramento
-
-Verifique recursos da VM:
-
-htop
-
-Memória:
-
-free -h
-
-Disco:
-
-df -h
-
-Containers:
-
-docker stats
-
-Logs:
-
-docker compose logs --tail=100
-
-Status:
-
-docker compose ps
-
----
-
-🧪 19. Checklist de validação
-
-Após a instalação:
-
-[ ] VM acessível via SSH
-[ ] Sistema operacional atualizado
-[ ] Docker instalado
-[ ] Docker Compose funcionando
-[ ] hbbs em execução
-[ ] hbbr em execução
-[ ] Chaves geradas
-[ ] Portas configuradas na OCI
-[ ] Firewall UFW configurado
-[ ] DNS resolvendo
-[ ] Cliente RustDesk configurado
-[ ] Conexão entre clientes validada
-[ ] Relay validado
-[ ] Backup configurado
-[ ] Logs verificados
-
----
-
-🛠️ 20. Troubleshooting
-
-Container não inicia
-
-Verifique:
-
-docker compose ps
-
-Depois:
-
-docker compose logs hbbs
-
-e:
-
-docker compose logs hbbr
-
----
-
-Porta não acessível
-
-Verifique em sequência:
-
-1. RustDesk está executando?
-2. A porta está sendo escutada?
-3. UFW permite a porta?
-4. OCI Security List permite?
-5. OCI NSG permite?
-6. Existe outro firewall?
-7. DNS aponta para o IP correto?
-
-Comandos:
-
-sudo ss -lntup
-
-sudo ufw status
-
-docker compose ps
-
----
-
-Cliente não encontra o servidor
-
-Verifique:
-
-DNS
-IP público
-Portas
-Firewall
-Key
-Configuração do ID Server
-Configuração do Relay Server
-
-Teste DNS:
-
-dig rustdesk.example.com
-
-Teste conectividade:
-
-nc -vz rustdesk.example.com <PORTA>
-
----
-
-🧰 21. Comandos úteis
-
-Iniciar
-
-docker compose up -d
-
-Parar
-
-docker compose down
-
-Reiniciar
-
-docker compose restart
-
-Atualizar
-
-docker compose pull
-docker compose up -d
-
-Logs
-
-docker compose logs -f
-
-Status
-
-docker compose ps
-
-Recursos
-
-docker stats
-
----
-
-📁 Estrutura final
-
-rustdesk-server/
-│
-├── docker-compose.yml
-│
-├── data/
-│   ├── id_ed25519
-│   ├── id_ed25519.pub
-│   └── ...
-│
-└── README.md
-
-«Arquivos contendo chaves privadas não devem ser commitados no Git.»
-
----
-
-🚫 .gitignore
-
-Crie:
-
-nano .gitignore
-
-Conteúdo:
-
-# RustDesk persistent data
-data/
-
-# Private keys
-*.key
-*.pem
-id_ed25519
-id_ed25519.*
-
-# Environment files
-.env
-.env.*
-
-# Logs
-*.log
-
-# Backup files
-*.tar
-*.tar.gz
-*.zip
-
-# OS
-.DS_Store
-Thumbs.db
-
----
-
-🧱 Melhorias futuras
-
-Este laboratório pode evoluir para uma arquitetura mais próxima de um ambiente profissional.
-
-Infraestrutura como Código
-
-Implementar OCI com:
-
-Terraform
-
-Exemplo:
-
-Terraform
-   │
-   ├── VCN
-   ├── Subnet
-   ├── Security List
-   ├── NSG
-   ├── Compute Instance
-   └── Public IP
-
----
-
-CI/CD
-
-Adicionar GitHub Actions para:
-
-Lint
-   ↓
-Validation
-   ↓
-Docker Compose validation
-   ↓
-Security scanning
-   ↓
-Deployment
-
----
-
-Observabilidade
-
-Adicionar:
-
-Prometheus
-Grafana
-Loki
-Alertmanager
-
-Arquitetura:
-
-RustDesk
-   │
-   ▼
-Metrics / Logs
-   │
-   ├── Prometheus
-   │
-   ├── Loki
-   │
-   └── Grafana
-
----
-
-Automação
-
-Criar scripts para:
-
-install.sh
-backup.sh
-restore.sh
-healthcheck.sh
-update.sh
 
 ---
 
