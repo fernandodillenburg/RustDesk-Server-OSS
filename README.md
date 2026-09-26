@@ -65,10 +65,10 @@ Além de funcionar como um ambiente real de utilização, este projeto foi estru
                 │  Docker               │
                 │    │                  │
                 │    ├── hbbs           │
-                │    │   Rendezvous      │
+                │    │   Rendezvous     │
                 │    │                  │
                 │    └── hbbr           │
-                │        Relay           │
+                │        Relay          │
                 │                       │
                 └──────────┬────────────┘
                            │
